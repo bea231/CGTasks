@@ -13,6 +13,8 @@
 // includes
 
 #include "Library/cglApp.h"
+#include "Application/Math/cglMath.h"
+#include "geometry.h"
 
 // *******************************************************************
 // defines & constants
@@ -25,20 +27,14 @@ class myApp : public cglApp
 {
 public:
   // Constructor
-  myApp(int nW, int nH, void* hInst, int nCmdShow) 
-    : cglApp(nW, nH, hInst, nCmdShow)
-    , m_nPrevMouseX(-100)
-    , m_nPrevMouseY(-100)
-  {
-    for (int i = 0; i < MAX_KEYS; i++)
-      m_keysPressed[i] = false;
-  }
+  myApp(int nW, int nH, void* hInst, int nCmdShow);
   // Destructor
   virtual ~myApp() {}
   // This function performs input processing. Returns true if input is handled
   virtual bool processInput(unsigned int nMsg, int wParam, long lParam);
 protected:
   virtual void update();
+  virtual void renderInternal();
   
 private:
   enum
@@ -46,12 +42,18 @@ private:
     MAX_KEYS = 128
   };
  
-  int   m_nPrevMouseX;  
+  int   m_nPrevMouseX;
   int   m_nPrevMouseY;
   bool  m_keysPressed[MAX_KEYS];
   
   void rotate(float dx, float dy);
   void zoom(float dr);
+
+  camera_t m_camera;
+  base_geometry_t m_geometry;
+  transform_t m_geometry_base_transform;
+
+  bool m_is_wireframe;
 };
 
 

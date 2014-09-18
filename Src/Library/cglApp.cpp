@@ -183,7 +183,7 @@ void cglApp::update(void)
     //sprintf_s(fpsString, "%s FPS = %3.6f", getWindowText(), rFPS);
     std::wostringstream fpsStream;
     fpsStream << getWindowText();
-    fpsStream << L"FPS = " << std::setprecision(1) << rFPS;
+    fpsStream << L"FPS = " << std::setprecision(2) << rFPS;
     
     SetWindowText(HWND(m_hWnd), fpsStream.str().c_str());
     // Drop

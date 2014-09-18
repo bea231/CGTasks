@@ -27,7 +27,7 @@
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInsatnce,
                    LPSTR lpszCommandLine, int nCmdShow)
 {
-  myApp app(800, 600, (void*)hInstance, nCmdShow);
+  myApp app(1000, 700, (void*)hInstance, nCmdShow);
   if (!app.isFailed())
     app.theLoop();
 } // end of WinMain
