@@ -9,6 +9,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Application\Math">
+      <UniqueIdentifier>{527258d8-3519-49e3-895a-18b0fb6fac1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Library\cglApp.cpp">
@@ -45,6 +48,24 @@
     </ClInclude>
     <ClInclude Include="Src\Application\geometry.h">
       <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMath.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathCamera.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathDef.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathMatrix.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathTransform.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathVec.h">
+      <Filter>Application\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

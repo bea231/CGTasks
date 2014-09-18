@@ -101,6 +101,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Application\geometry.h" />
+    <ClInclude Include="Src\Application\Math\cglMath.h" />
+    <ClInclude Include="Src\Application\Math\cglMathCamera.h" />
+    <ClInclude Include="Src\Application\Math\cglMathDef.h" />
+    <ClInclude Include="Src\Application\Math\cglMathMatrix.h" />
+    <ClInclude Include="Src\Application\Math\cglMathTransform.h" />
+    <ClInclude Include="Src\Application\Math\cglMathVec.h" />
     <ClInclude Include="Src\Application\myApp.h" />
     <ClInclude Include="Src\Library\cglApp.h" />
     <ClInclude Include="Src\Library\cglD3D.h" />

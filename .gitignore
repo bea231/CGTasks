@@ -27,6 +27,7 @@
 *.ilk
 *.pdb
 *.suo
+*.opensdf
 
 /Debug
 /Release
