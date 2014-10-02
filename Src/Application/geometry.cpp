@@ -8,7 +8,7 @@
 
 #include "geometry.h"
 
-const int base_geometry_t::c_FVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+const int base_geometry_t::c_FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE;
 
 static DWORD vec_to_color( vec_t const & v)
 {
@@ -36,7 +36,8 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
     for (unsigned int j = 0; j < N - 1; ++j)
     {
       vertices_buf[i * N + j].V = f(delta_u * i, delta_v * j);
-      vertices_buf[i * N + j].Color = vec_to_color(vertices_buf[i * N + j].V);
+      vertices_buf[i * N + j].N = f.n(delta_u * i, delta_v * j);
+      vertices_buf[i * N + j].Color = 0xFFFFFFFF;
 
       /* First triangle */
       indices_buf[6 * ((N - 1) * i + j)] = i * N + j;
@@ -53,12 +54,14 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
   for (unsigned int j = 0; j < N - 1; ++j)
   {
     vertices_buf[(M - 1) * N + j].V = f(delta_u * (M - 1), delta_v * j);
-    vertices_buf[(M - 1) * N + j].Color = vec_to_color(vertices_buf[(M - 1) * N + j].V);
+    vertices_buf[(M - 1) * N + j].N = f.n(delta_u * (M - 1), delta_v * j);
+    vertices_buf[(M - 1) * N + j].Color = 0xFFFFFFFF;
   }
   for (unsigned int i = 0; i < M; ++i)
   {
     vertices_buf[i * N + N - 1].V = f(delta_u * i, delta_v * (N - 1));
-    vertices_buf[i * N + N - 1].Color = vec_to_color(vertices_buf[i * N + N - 1].V);
+    vertices_buf[i * N + N - 1].N = f.n(delta_u * i, delta_v * (N - 1));
+    vertices_buf[i * N + N - 1].Color = 0xFFFFFFFF;
   }
 
   m_vertices_buf->Unlock();
@@ -80,15 +83,15 @@ void base_geometry_t::render( LPDIRECT3DDEVICE9 device )
   device->SetStreamSource(0, m_vertices_buf, 0, sizeof(vertex_t));
   device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_vertices_num, 0, m_triangles_num);
 
-  float const axis_len = 10;
+  /*float const axis_len = 10;
   base_geometry_t::vertex_t const axis[6] =
   {
-    { vec_t(0, 0, 0), 0xFFFF0000 },
-    { vec_t(axis_len, 0, 0), 0xFFFF0000 },
-    { vec_t(0, 0, 0), 0xFF00FF00 },
-    { vec_t(0, axis_len, 0), 0xFF00FF00 },
-    { vec_t(0, 0, 0), 0xFF0000FF },
-    { vec_t(0, 0, axis_len), 0xFF0000FF },
+    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
+    { vec_t(axis_len, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
+    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
+    { vec_t(0, axis_len, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
+    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF0000FF },
+    { vec_t(0, 0, axis_len), vec_t(-1, 0, 0), 0xFF0000FF },
   };
-  device->DrawPrimitiveUP(D3DPT_LINELIST, 3, axis, sizeof(base_geometry_t::vertex_t));
+  device->DrawPrimitiveUP(D3DPT_LINELIST, 3, axis, sizeof(base_geometry_t::vertex_t));*/
 }

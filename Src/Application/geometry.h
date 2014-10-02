@@ -11,8 +11,8 @@
 
 #include <vector>
 
-#include "Library/cglD3D.h"
-#include "Application/Math/cglMath.h"
+#include <d3d9.h>
+#include "Math/cglMath.h"
 
 class geometry_t
 {
@@ -23,7 +23,7 @@ public:
   virtual void render( LPDIRECT3DDEVICE9 device ) = 0;
   virtual void transform( transform_t const &t )
   {
-    m_transform = t * m_transform;
+    m_transform.transform(t);
   }
   virtual void set_transform(transform_t const &t)
   {
@@ -40,6 +40,11 @@ public:
   {
     return vec_t(u, v, 0);
   }
+
+  virtual vec_t n( float u, float v ) const
+  {
+     return vec_t(0, 0, 1.f);
+  }
 };
 
 class SphereFactory : public VerticesFactory
@@ -55,6 +60,11 @@ public:
     cglmath::get_sin_cos(theta, sine_theta, cosine_theta);
 
     return vec_t(cosine_theta * cosine_phi, sine_theta, cosine_theta * sine_phi);
+  }
+
+  virtual vec_t n(float u, float v) const
+  {
+    return (*this)(u, v);
   }
 };
 
@@ -79,13 +89,25 @@ public:
 
     return vec_t(cosine_theta * cosine_phi / m_a, sine_theta / m_b, cosine_theta * sine_phi / m_c);
   }
+
+  virtual vec_t n(float u, float v) const
+  {
+    float const phi = (u * 2.f - 1.f) * cglmath::c_pif;
+    float const theta = (v - 0.5f) *  cglmath::c_pif;
+    float sine_theta, cosine_theta, sine_phi, cosine_phi;
+
+    cglmath::get_sin_cos(phi, sine_phi, cosine_phi);
+    cglmath::get_sin_cos(theta, sine_theta, cosine_theta);
+
+    return vec_t(cosine_theta * cosine_phi * m_a, sine_theta * m_b, cosine_theta * sine_phi * m_c);
+  }
 private:
   float m_a;
   float m_b;
   float m_c;
 };
 
-class CyllinderFactory : public VerticesFactory
+/*class CyllinderFactory : public VerticesFactory
 {
 public:
   CyllinderFactory( float radius = 1, float length = 1)
@@ -132,30 +154,7 @@ public:
 private:
   float m_in_r;
   float m_out_r;
-};
-
-class KleinFactory : public VerticesFactory
-{
-public:
-  virtual vec_t operator()(float u, float v) const
-  {
-    float const phi = u * cglmath::c_pif * 2;
-    float const theta = v * cglmath::c_pif * 2;
-    float sine_theta, cosine_theta, sine_phi, cosine_phi;
-    float sine_half_theta, cosine_half_theta, sine_double_phi, cosine_double_phi;
-    float const r = 5;
-
-    cglmath::get_sin_cos(phi, sine_phi, cosine_phi);
-    cglmath::get_sin_cos(theta, sine_theta, cosine_theta);
-    cglmath::get_sin_cos(2 * phi, sine_double_phi, cosine_double_phi);
-    cglmath::get_sin_cos(theta / 2.f, sine_half_theta, cosine_half_theta);
-
-    float const x = (r + cosine_half_theta * sine_phi - sine_half_theta * sine_double_phi) * cosine_theta;
-    float const y = (r + cosine_half_theta * sine_phi - sine_half_theta * sine_double_phi) * sine_theta;
-    float const z = sine_half_theta * sine_phi + cosine_half_theta * cosine_double_phi;
-    return vec_t(x, y, z);
-  }
-};
+};  */
 
 class base_geometry_t : public geometry_t
 {
@@ -165,6 +164,7 @@ public:
   struct vertex_t
   {
     vec_t V;
+    vec_t N;
     DWORD Color;
   };
 #pragma pack(pop)

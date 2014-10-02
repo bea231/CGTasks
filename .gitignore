@@ -28,6 +28,7 @@
 *.pdb
 *.suo
 *.opensdf
+*.user
 
 /Debug
 /Release

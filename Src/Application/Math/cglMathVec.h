@@ -701,23 +701,23 @@ namespace cglmath
     /* Transformation vector by specified transformation function */
     TVector transformation( const TTransform<TYPE> &trans ) const
     {
-      return TVector(x * trans.M.M[0][0] + y * trans.M.M[1][0] +
-                     z * trans.M.M[2][0] + trans.M.M[3][0],
-                     x * trans.M.M[0][1] + y * trans.M.M[1][1] +
-                     z * trans.M.M[2][1] + trans.M.M[3][1],
-                     x * trans.M.M[0][2] + y * trans.M.M[1][2] +
-        z * trans.M.M[2][2] + trans.M.M[3][2]);
+      return TVector(x * trans.matrix.M[0][0] + y * trans.matrix.M[1][0] +
+                     z * trans.matrix.M[2][0] + trans.matrix.M[3][0],
+                     x * trans.matrix.M[0][1] + y * trans.matrix.M[1][1] +
+                     z * trans.matrix.M[2][1] + trans.matrix.M[3][1],
+                     x * trans.matrix.M[0][2] + y * trans.matrix.M[1][2] +
+                     z * trans.matrix.M[2][2] + trans.matrix.M[3][2]);
     }
 
     /* Inverse transformation vector by specified transformation function */
     TVector inv_transformation( const TTransform<TYPE> &trans ) const
     {
-      return TVector(x * trans.InvM.M[0][0] + y * trans.InvM.M[1][0] +
-                     z * trans.InvM.M[2][0] + trans.InvM.M[3][0],
-                     x * trans.InvM.M[0][1] + y * trans.InvM.M[1][1] +
-                     z * trans.InvM.M[2][1] + trans.InvM.M[3][1],
-                     x * trans.InvM.M[0][2] + y * trans.InvM.M[1][2] +
-                     z * trans.InvM.M[2][2] + trans.InvM.M[3][2]);
+      return TVector(x * trans.inv_matrix.M[0][0] + y * trans.inv_matrix.M[1][0] +
+                     z * trans.inv_matrix.M[2][0] + trans.inv_matrix.M[3][0],
+                     x * trans.inv_matrix.M[0][1] + y * trans.inv_matrix.M[1][1] +
+                     z * trans.inv_matrix.M[2][1] + trans.inv_matrix.M[3][1],
+                     x * trans.inv_matrix.M[0][2] + y * trans.inv_matrix.M[1][2] +
+                     z * trans.inv_matrix.M[2][2] + trans.inv_matrix.M[3][2]);
     }
   };
 }

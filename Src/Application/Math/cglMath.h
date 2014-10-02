@@ -15,11 +15,13 @@
 #include "cglMathMatrix.h"
 #include "cglMathTransform.h"
 #include "cglMathCamera.h"
+#include "cglMathColor.h"
 
 typedef cglmath::TCamera<float> camera_t;
 typedef cglmath::TVector<float> vec_t;
 typedef cglmath::TMatrix<float> matrix_t;
 typedef cglmath::TTransform<float> transform_t;
+typedef cglmath::TColor<float> color_t;
 
 #endif /* __CGLMATH_INCLUDED__ */
 

@@ -32,6 +32,9 @@
     <ClCompile Include="Src\Application\geometry.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Application\meshes.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Library\cglApp.h">
@@ -45,9 +48,6 @@
     </ClInclude>
     <ClInclude Include="Src\Application\myApp.h">
       <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Application\geometry.h">
-      <Filter>Library</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\Math\cglMath.h">
       <Filter>Application\Math</Filter>
@@ -66,6 +66,21 @@
     </ClInclude>
     <ClInclude Include="Src\Application\Math\cglMathVec.h">
       <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\meshes.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\geometry.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Math\cglMathColor.h">
+      <Filter>Application\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\car.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\lights.h">
+      <Filter>Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

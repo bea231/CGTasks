@@ -306,7 +306,7 @@ namespace cglmath
 
       direction = rot_y.transform_vector(direction);
       right = rot_y.transform_vector(right);
-      update_dir_loc_up();         
+      update_dir_loc_up();
       look_at = location + direction * dist;
 
       return *this;
