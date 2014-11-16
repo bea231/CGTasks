@@ -8,7 +8,7 @@
 
 #include "geometry.h"
 
-const int base_geometry_t::c_FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE;
+const int base_geometry_t::c_FVF = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1;
 
 static DWORD vec_to_color( vec_t const & v)
 {
@@ -37,6 +37,8 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
     {
       vertices_buf[i * N + j].V = f(delta_u * i, delta_v * j);
       vertices_buf[i * N + j].N = f.n(delta_u * i, delta_v * j);
+      vertices_buf[i * N + j].u = delta_u * i;
+      vertices_buf[i * N + j].v = 1 - delta_v * j;
       vertices_buf[i * N + j].Color = 0xFFFFFFFF;
 
       /* First triangle */
@@ -55,12 +57,16 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
   {
     vertices_buf[(M - 1) * N + j].V = f(delta_u * (M - 1), delta_v * j);
     vertices_buf[(M - 1) * N + j].N = f.n(delta_u * (M - 1), delta_v * j);
+    vertices_buf[(M - 1) * N + j].u = delta_u * (M - 1);
+    vertices_buf[(M - 1) * N + j].v = 1 - delta_v * j;
     vertices_buf[(M - 1) * N + j].Color = 0xFFFFFFFF;
   }
   for (unsigned int i = 0; i < M; ++i)
   {
     vertices_buf[i * N + N - 1].V = f(delta_u * i, delta_v * (N - 1));
     vertices_buf[i * N + N - 1].N = f.n(delta_u * i, delta_v * (N - 1));
+    vertices_buf[i * N + N - 1].u = delta_u * i;
+    vertices_buf[i * N + N - 1].v = 1 - delta_v * (N - 1);
     vertices_buf[i * N + N - 1].Color = 0xFFFFFFFF;
   }
 

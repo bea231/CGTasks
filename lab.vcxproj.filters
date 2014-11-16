@@ -35,6 +35,9 @@
     <ClCompile Include="Src\Application\meshes.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Application\texture.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Library\cglApp.h">
@@ -80,6 +83,12 @@
       <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\lights.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\texture.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\airplane.h">
       <Filter>Application</Filter>
     </ClInclude>
   </ItemGroup>

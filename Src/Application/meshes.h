@@ -11,16 +11,19 @@
 
 #include <d3dx9mesh.h>
 #include "geometry.h"
+#include "texture.h"
 
 class x_mesh_t : public geometry_t
 {
 public:
+  x_mesh_t() : m_mesh(0), m_materials(0), m_materials_count(0), m_textures(0) {}
   void load( LPCWSTR file_name, LPDIRECT3DDEVICE9 device );
   void render( LPDIRECT3DDEVICE9 device );
   ~x_mesh_t();
 private:
   ID3DXMesh *m_mesh;
   D3DMATERIAL9 *m_materials;
+  texture_t *m_textures;
   DWORD m_materials_count;
 };
 

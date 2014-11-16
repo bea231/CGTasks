@@ -188,10 +188,10 @@ namespace cglmath
       double
         v0 = b * 255, v1 = g * 255, v2 = r * 255, v3 = a * 255;
       unsigned char
-        B0 = v0 > 255 ? 255 : v0 < 0 ? 0 : v0,
-        B1 = v1 > 255 ? 255 : v1 < 0 ? 0 : v1,
-        B2 = v2 > 255 ? 255 : v2 < 0 ? 0 : v2,
-        B3 = v3 > 255 ? 255 : v3 < 0 ? 0 : v3;
+        B0 = v0 > 255 ? 255 : v0 < 0 ? 0 : (unsigned char)v0,
+        B1 = v1 > 255 ? 255 : v1 < 0 ? 0 : (unsigned char)v1,
+        B2 = v2 > 255 ? 255 : v2 < 0 ? 0 : (unsigned char)v2,
+        B3 = v3 > 255 ? 255 : v3 < 0 ? 0 : (unsigned char)v3;
 
       return CGL_MAKELONG0123(B0, B1, B2, B3);
     }

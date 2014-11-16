@@ -3,6 +3,7 @@
 #ifndef __LIGHTS_INCLUDED__
 #define __LIGHTS_INCLUDED__
 
+#include <cstring>
 #include <d3d9.h>
 #include "Math/cglMath.h"
 
@@ -11,6 +12,7 @@ class light_t
 public:
   light_t() : m_enabled( -1 )
   {
+    memset(&m_light, 0, sizeof(D3DLIGHT9));
   }
 
   virtual ~light_t() = 0 {}

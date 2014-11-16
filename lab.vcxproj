@@ -96,11 +96,13 @@
     <ClCompile Include="Src\Application\main.cpp" />
     <ClCompile Include="Src\Application\meshes.cpp" />
     <ClCompile Include="Src\Application\myApp.cpp" />
+    <ClCompile Include="Src\Application\texture.cpp" />
     <ClCompile Include="Src\Library\cglApp.cpp" />
     <ClCompile Include="Src\Library\cglD3D.cpp" />
     <ClCompile Include="Src\Library\cglTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Application\airplane.h" />
     <ClInclude Include="Src\Application\car.h" />
     <ClInclude Include="Src\Application\geometry.h" />
     <ClInclude Include="Src\Application\lights.h" />
@@ -113,6 +115,7 @@
     <ClInclude Include="Src\Application\Math\cglMathVec.h" />
     <ClInclude Include="Src\Application\meshes.h" />
     <ClInclude Include="Src\Application\myApp.h" />
+    <ClInclude Include="Src\Application\texture.h" />
     <ClInclude Include="Src\Library\cglApp.h" />
     <ClInclude Include="Src\Library\cglD3D.h" />
     <ClInclude Include="Src\Library\cglTimer.h" />
