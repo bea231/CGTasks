@@ -44,8 +44,8 @@ namespace cglmath
 
     /* Class constructor */
     explicit TColor( unsigned long value ) :
-      r(((value >> 16) & 0xFF) / 255.0), g(((value >> 8) & 0xFF) / 255.0),
-      b((value & 0xFF) / 255.0), a(((value >> 24) & 0xFF) / 255.0)
+      r(((value >> 16) & 0xFF) / 255.0f), g(((value >> 8) & 0xFF) / 255.0f),
+      b((value & 0xFF) / 255.0f), a(((value >> 24) & 0xFF) / 255.0f)
     {
     }
 

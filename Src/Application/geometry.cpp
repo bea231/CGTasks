@@ -16,7 +16,7 @@ static DWORD vec_to_color( vec_t const & v)
   return D3DCOLOR_XRGB((int)norm_v.x, (int)norm_v.y, (int)norm_v.z);
 }
 
-base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsigned int N, VerticesFactory const &f )
+base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsigned int N, VerticesFactory const &f, color_t const &color )
   : m_vertices_num(M * N)
   , m_triangles_num((M - 1) * (N - 1) * 2)
 {
@@ -39,7 +39,7 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
       vertices_buf[i * N + j].N = f.n(delta_u * i, delta_v * j);
       vertices_buf[i * N + j].u = delta_u * i;
       vertices_buf[i * N + j].v = 1 - delta_v * j;
-      vertices_buf[i * N + j].Color = 0xFFFFFFFF;
+      vertices_buf[i * N + j].Color = color;
 
       /* First triangle */
       indices_buf[6 * ((N - 1) * i + j)] = i * N + j;
@@ -59,7 +59,7 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
     vertices_buf[(M - 1) * N + j].N = f.n(delta_u * (M - 1), delta_v * j);
     vertices_buf[(M - 1) * N + j].u = delta_u * (M - 1);
     vertices_buf[(M - 1) * N + j].v = 1 - delta_v * j;
-    vertices_buf[(M - 1) * N + j].Color = 0xFFFFFFFF;
+    vertices_buf[(M - 1) * N + j].Color = color;
   }
   for (unsigned int i = 0; i < M; ++i)
   {
@@ -67,7 +67,7 @@ base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsi
     vertices_buf[i * N + N - 1].N = f.n(delta_u * i, delta_v * (N - 1));
     vertices_buf[i * N + N - 1].u = delta_u * i;
     vertices_buf[i * N + N - 1].v = 1 - delta_v * (N - 1);
-    vertices_buf[i * N + N - 1].Color = 0xFFFFFFFF;
+    vertices_buf[i * N + N - 1].Color = color;
   }
 
   m_vertices_buf->Unlock();
@@ -80,24 +80,10 @@ base_geometry_t::~base_geometry_t()
   m_index_buf->Release();
 }
 
-void base_geometry_t::render( LPDIRECT3DDEVICE9 device )
+void base_geometry_t::render( recursive_data_t & rd )
 {
-  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)m_transform.matrix.M);
-
-  device->SetFVF(c_FVF);
-  device->SetIndices(m_index_buf);
-  device->SetStreamSource(0, m_vertices_buf, 0, sizeof(vertex_t));
-  device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_vertices_num, 0, m_triangles_num);
-
-  /*float const axis_len = 10;
-  base_geometry_t::vertex_t const axis[6] =
-  {
-    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
-    { vec_t(axis_len, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
-    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
-    { vec_t(0, axis_len, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
-    { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF0000FF },
-    { vec_t(0, 0, axis_len), vec_t(-1, 0, 0), 0xFF0000FF },
-  };
-  device->DrawPrimitiveUP(D3DPT_LINELIST, 3, axis, sizeof(base_geometry_t::vertex_t));*/
+  rd.device->SetFVF(c_FVF);
+  rd.device->SetIndices(m_index_buf);
+  rd.device->SetStreamSource(0, m_vertices_buf, 0, sizeof(vertex_t));
+  rd.device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_vertices_num, 0, m_triangles_num);
 }

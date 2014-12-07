@@ -11,16 +11,20 @@
 
 
 #include <vector>
-#include <math.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <windows.h>
 #include <windowsx.h>
 #include <zmouse.h>
+
+#include <cmath>
 
 #include "myApp.h"
 #include "../Library/cglD3D.h"
 
 #include <d3dx9math.h>
+
+#include "airplane.h"
+#include "flower.h"
 
 // *******************************************************************
 // defines
@@ -28,10 +32,10 @@
 namespace
 {
   const float s_rMouseMove2Rotate = 0.3f;
-  const float s_rMouseWheel2Zoom = 0.03f;
+  const float s_rMouseWheel2Zoom = 0.6f;
   const float s_rKbd2Rotate = 100.16f;
-  const float s_rKbd2Move = 100.f;
-  const float s_rKbd2Zoom = 100.16f;
+  const float s_rKbd2Move = 30.f;
+  const float s_rKbd2Zoom = 30.16f;
   const float s_rCarRotate = 30.f;
 }
 
@@ -48,84 +52,70 @@ myApp::myApp( int nW, int nH, void* hInst, int nCmdShow )
   , m_nPrevMouseY(-100)
   , m_is_wireframe(false)
   , m_is_fixed_camera(false)
-  , m_plane(m_pD3D->getDevice(), 500, 500, VerticesFactory())
-  , m_mipmap_plane(m_pD3D->getDevice(), 100, 100, VerticesFactory())
-  , m_airplane(m_pD3D->getDevice())
-  , m_point_light(vec_t(7, 7, 10))
-  , m_sphere(m_pD3D->getDevice(), 25, 30, SphereFactory())
   , m_mipmap_index(0)
   , m_min_index(0)
   , m_mag_index(0)
-  , m_spot_light(vec_t(0.f, 10.f, 0.f), vec_t(0.f, 0.f, -1.f), cglmath::Deg2Rad(30.f), cglmath::Deg2Rad(50.f))
   , m_bias(0)
+  , m_font(0)
 {
   for (int i = 0; i < MAX_KEYS; i++)
     m_keysPressed[i] = false;
   m_nClearColor = 0xFF222222;
-  m_camera.set_camera(vec_t(50, 25, 5.f), vec_t(0.f), vec_t(0.f, 1.f, 0.f), true);
+  m_camera.set_camera(vec_t(5, 5, 5.f), vec_t(0.f), vec_t(0.f, 1.f, 0.f), true);
   m_camera.set_near_far(0.5, 10000.f);
 
   IDirect3DDevice9 *device  = m_pD3D->getDevice();
-  //device->SetRenderState(D3DRS_ZENABLE, true);
-  //device->SetRenderState(D3DRS_LIGHTING, true);
   device->SetRenderState(D3DRS_SPECULARENABLE, true);
   device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
   device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
 
   device->SetSamplerState( 0, D3DSAMP_MIPFILTER, s_mipmap[m_mipmap_index] );
-  /*device->SetSamplerState( 0, D3DSAMP_MINFILTER, s_minmag[m_min_index] );
-  device->SetSamplerState( 0, D3DSAMP_MAGFILTER, s_minmag[m_mag_index] );
-  m_pD3D->getDevice()->SetSamplerState( 0, D3DSAMP_MIPMAPLODBIAS, *reinterpret_cast<DWORD *>(&m_bias) );*/
 
-  /** AIRPLANE **/
-  m_airplane.transform(transform_t().translate(0, 0, 10));
+  direction_light.set_ambient(color_t(0.1f));
+  direction_light.set_diffuse(color_t(0.6f));
+  direction_light.set_specular(color_t(0.1f));
+  direction_light.set_direction(vec_t(-1, -1, 0.01f));
+  direction_light.set(device, 0);
+  direction_light.enable(device);
 
-  /** SPHERE **/
-  m_sphere.transform(transform_t().scale(0.1f).translate(7, 7, 10));
+  /*** Add units to render ***/
+  m_units.push_back((IAnimationUnit *)new base_plane_t(device));
 
-  /** PLANE **/
-  m_plane_texture.load(device, L"Res/ground00.bmp");
-  m_plane.transform(transform_t().translate(-0.5f, -0.5f, 0).rotate_x(-90).scale(25));
+  m_units.push_back((IAnimationUnit *)new airplane_t(device));
 
-  /** MIPMAP PLANE **/
-  m_mipmap_plane.transform(transform_t().scale(50).translate(-25, -25, -30.f));
-  std::vector<LPCWSTR> names;
-  names.push_back(L"Res/tex0.jpg");
-  names.push_back(L"Res/tex1.jpg");
-  names.push_back(L"Res/tex3.jpg");
-  names.push_back(L"Res/tex4.jpg");
-  names.push_back(L"Res/tex5.jpg");
+  flower_params_t params;
+  params.petal2_height = 0.1f;
+  params.petal2_width = 0.03f;
+  params.petal2_color = color_t(1, 0, 0);
+  params.petal2_angle_min = 5.f;
+  params.petal2_angle_max = 20.f;
 
-  m_mipmap_texture.load_mipmaped(device, names);
+  params.petal1_height = 0.1f;
+  params.petal1_width = 0.1f;
+  params.petal1_color = color_t(0x00CC00UL);
+  params.petal1_angle_min = 5.f;
+  params.petal1_angle_max = 60.f;
 
-  m_geometry_material.Ambient = *reinterpret_cast<D3DCOLORVALUE *>(&color_t(1.f));
-  m_geometry_material.Diffuse = *reinterpret_cast<D3DCOLORVALUE *>(&color_t(1.f));
-  m_geometry_material.Specular = *reinterpret_cast<D3DCOLORVALUE *>(&color_t(0.f));
-  m_geometry_material.Emissive = *reinterpret_cast<D3DCOLORVALUE *>(&color_t(0.f));
-  m_geometry_material.Power = 0;
+  params.receptacle_radius = 0.12f;
+  params.receptacle_color = color_t(0xFFCC33UL);
 
-  m_spot_light.set_ambient( color_t( 0.7f, 0, 0 ) );
-  m_spot_light.set_diffuse( color_t(0.9f, 0, 0) );
-  m_spot_light.set_specular( color_t(0.9f, 0, 0) );
-  m_spot_light.set_attenuation1( 0.1f );
-  m_spot_light.set( device, 0 );
-  m_spot_light.enable( device );
+  params.petals_count = 12;
+  params.velocity = 1.f;
 
-  m_direction_light.set_direction(vec_t(0, -1, -1).normalize());
-  m_direction_light.set_ambient(color_t(0.1f));
-  float grey = 0.7f;
-  m_direction_light.set_diffuse(color_t(grey));
-  m_direction_light.set_specular(color_t(grey));
-  m_direction_light.set(device, 2);
-  m_direction_light.enable(device);
-
-  m_point_light.set_ambient(color_t(0, 0.1f, 0));
-  m_point_light.set_diffuse(color_t(0, 0.7f, 0));
-  m_point_light.set_specular(color_t(0, 0.7f, 0));
-  m_point_light.set_attenuation1(0.1f);
-  m_point_light.set_attenuation2(0.01f);
-  m_point_light.set(device, 3);
-  m_point_light.enable(device);
+  params.stem_thickness = 0.03f;
+  params.stem_length = 0.7f;
+  params.stem_color = color_t(0x003300UL);
+  
+  for (size_t i = 0; i < 10; ++i)
+    for (size_t j = 0; j < 10; ++j)
+    {
+      params.velocity =  (rand() / (float)RAND_MAX + 0.1f) * 2;
+      flower_t *flower = new flower_t(device, params);
+      float const x = rand() / (float)RAND_MAX * 40 - 20;
+      float const z = rand() / (float)RAND_MAX * 40 - 20;
+      flower->transform().translate(x, 0, z);
+      m_units.push_back((IAnimationUnit *)flower);
+    }
 }
 
 bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
@@ -155,7 +145,7 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
     case WM_MOUSEWHEEL:
     {
       int zDelta = (int)((signed short)(HIWORD(wParam)));
-      zoom(zDelta * s_rMouseWheel2Zoom);
+      zoom(zDelta * s_rMouseWheel2Zoom * m_timer.getDelta());
       break;
     }
     
@@ -189,15 +179,6 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
         break;
       case 'D':
         m_camera.move_right( s_rKbd2Move * m_timer.getDelta() );
-        break;
-      case '1':
-        m_direction_light.set_state( m_pD3D->getDevice(), !m_direction_light.get_state() );
-        break;
-      case '2':
-        m_point_light.set_state( m_pD3D->getDevice(), !m_point_light.get_state() );
-        break;
-      case '3':
-        m_spot_light.set_state( m_pD3D->getDevice(), !m_spot_light.get_state() );
         break;
       case 'M':
         m_mipmap_index = (m_mipmap_index + 1) % 3;
@@ -272,40 +253,13 @@ void myApp::zoom(float dr)
 void myApp::renderInternal()
 {
   D3DXMATRIX proj, view;
-  vec_t pos(5, 5, 5), at(0, 0, 0), up(0, 1, 0);
-  float const axis_len = 1000;
-  base_geometry_t::vertex_t const axis[6] =
-  {
-     { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
-     { vec_t(axis_len, 0, 0), vec_t(-1, 0, 0), 0xFFFF0000 },
-     { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
-     { vec_t(0, axis_len, 0), vec_t(-1, 0, 0), 0xFF00FF00 },
-     { vec_t(0, 0, 0), vec_t(-1, 0, 0), 0xFF0000FF },
-     { vec_t(0, 0, axis_len), vec_t(-1, 0, 0), 0xFF0000FF },
-  };
-
-  
   IDirect3DDevice9 *device = m_pD3D->getDevice();
   device->SetTransform(D3DTS_PROJECTION, (D3DMATRIX *)m_camera.get_projection_matrix().M);
   device->SetTransform(D3DTS_VIEW, (D3DMATRIX *)m_camera.get_view_matrix().M);
-  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)matrix_t::UnitMatrix);
 
-  device->SetRenderState(D3DRS_LIGHTING, false);
-  device->SetFVF(base_geometry_t::c_FVF);
-  device->DrawPrimitiveUP(D3DPT_LINELIST, 3, axis, sizeof(base_geometry_t::vertex_t));
-  device->SetRenderState(D3DRS_LIGHTING, true);
-
-  m_airplane.render(device);
-
-  device->SetMaterial(&m_geometry_material);
-  m_plane_texture.bind(device, 0);
-  m_plane.render(device);
-
-  m_mipmap_texture.bind( device, 0 );
-  m_mipmap_plane.render( device );
-
-  texture_t::unbind(device);
-  m_sphere.render(device);
+  recursive_data_t rd(device, m_camera, m_timer, transform_t());
+  for (unit_iterator_t it = m_units.begin(); it != m_units.end(); ++it)
+    (*it)->treat_as_unit(rd);
 
   char buf[1000] = {0};
   sprintf_s(buf, "MipMap: %s\nMin filter: %s\nMagFilter: %s\nMipMap bias: %f",
@@ -313,7 +267,27 @@ void myApp::renderInternal()
              m_min_index == 0 ? "D3DTEXF_POINT" : "D3DTEXF_LINEAR",
              m_mag_index == 0 ? "D3DTEXF_POINT" : "D3DTEXF_LINEAR",
              m_bias);
-  MyTextOut(buf, 0, 0, 1000, 100, color_t(.5f, 0.5f, 0.5f));
+  print_text(buf, 0, 0, 1000, 100, color_t(.5f, 0.5f, 0.5f));
+
+  float const axis_len = 1000;
+  struct axis_vertex
+  {
+    vec_t v;
+    DWORD color;
+  } const axis[6] =
+  {
+    { vec_t( 0, 0, 0 ), 0xFFFF0000 },
+    { vec_t( axis_len, 0, 0 ), 0xFFFF0000 },
+    { vec_t( 0, 0, 0 ), 0xFF00FF00 },
+    { vec_t( 0, axis_len, 0 ), 0xFF00FF00 },
+    { vec_t( 0, 0, 0 ), 0xFF0000FF },
+    { vec_t( 0, 0, axis_len ), 0xFF0000FF },
+  };
+  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)matrix_t::UnitMatrix);
+  device->SetRenderState( D3DRS_LIGHTING, false );
+  device->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE );
+  device->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( axis_vertex ) );
+  device->SetRenderState( D3DRS_LIGHTING, true );
 }
 
 void myApp::update()
@@ -338,16 +312,14 @@ void myApp::update()
   if (m_keysPressed[VK_ADD])
     dr += s_rKbd2Zoom * m_timer.getDelta();
 
-  // Update object rotation
-  m_airplane.transform(transform_t().rotate_y(s_rCarRotate * m_timer.getDelta()));
 }
 
-void myApp::MyTextOut( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color )
+void myApp::print_text( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color )
 {
   RECT rect;
 
   if (m_font == NULL)
-    D3DXCreateFont( m_pD3D->getDevice(), 20, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT( "Times New Roman" ), &m_font );
+    D3DXCreateFont( m_pD3D->getDevice(), 17, 0, FW_NORMAL, 4, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH | FF_DONTCARE, TEXT( "Times New Roman" ), &m_font );
 
   rect.left = x1;
   rect.top = y1;

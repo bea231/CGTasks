@@ -12,11 +12,15 @@
 // *******************************************************************
 // includes
 
+#include <d3dx9.h>
+
 #include "../Library/cglApp.h"
 #include "Math/cglMath.h"
-#include "airplane.h"
 #include "geometry.h"
 #include "lights.h"
+#include "texture.h"
+
+#include "unit.h"
 
 // *******************************************************************
 // defines & constants
@@ -34,6 +38,8 @@ public:
   virtual ~myApp() 
   {
     m_font->Release();
+    for (unit_iterator_t it = m_units.begin(); it != m_units.end(); ++it)
+        delete (*it);
   }
   // This function performs input processing. Returns true if input is handled
   virtual bool processInput(unsigned int nMsg, int wParam, long lParam);
@@ -55,19 +61,11 @@ private:
   void zoom(float dr);
 
   camera_t m_camera;
-  airplane_t m_airplane;
-  base_geometry_t m_plane;
-  base_geometry_t m_sphere;
-  texture_t m_plane_texture;
-  D3DMATERIAL9 m_geometry_material;
 
+  direction_light_t direction_light;
 
-  base_geometry_t m_mipmap_plane;
-  texture_t m_mipmap_texture;
-
-  spot_light_t m_spot_light;
-  direction_light_t m_direction_light;
-  point_light_t m_point_light;
+  typedef std::list<IAnimationUnit *>::iterator unit_iterator_t;
+  std::list<IAnimationUnit *> m_units;
 
   int m_mipmap_index;
   int m_min_index;
@@ -78,9 +76,9 @@ private:
 
   float m_bias;
 
-  ID3DXFont * m_font = NULL;  
+  ID3DXFont * m_font;
 
-  void MyTextOut( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color );
+  void print_text( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color );
 };
 
 

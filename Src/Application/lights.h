@@ -36,7 +36,8 @@ public:
     if (m_enabled >= 0)
     {
       m_enabled = true;
-      device->LightEnable( m_index, m_enabled );
+      bool k = true;
+      device->LightEnable( m_index, k );
     }
   }
 

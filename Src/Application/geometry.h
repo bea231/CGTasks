@@ -12,26 +12,8 @@
 #include <vector>
 
 #include <d3d9.h>
+#include "unit.h"
 #include "Math/cglMath.h"
-
-class geometry_t
-{
-public:
-  geometry_t() {}
-  virtual ~geometry_t() = 0 {}
-
-  virtual void render( LPDIRECT3DDEVICE9 device ) = 0;
-  virtual void transform( transform_t const &t )
-  {
-    m_transform.transform(t);
-  }
-  virtual void set_transform(transform_t const &t)
-  {
-    m_transform = t;
-  }
- protected:
-  transform_t m_transform;
-};
 
 class VerticesFactory
 {
@@ -66,6 +48,35 @@ public:
   {
     return (*this)(u, v);
   }
+};
+
+class CylinderFactory : public VerticesFactory
+{
+public:
+  CylinderFactory( float height, float radius )
+    : m_height(height)
+    , m_radius(radius)
+  {
+
+  }
+  virtual vec_t operator()(float u, float v) const
+  {
+    float const phi = (u * 2.f - 1.f) * cglmath::c_pif;
+    float sine_phi, cosine_phi;
+
+    cglmath::get_sin_cos(phi, sine_phi, cosine_phi);
+
+    return vec_t(m_radius* cosine_phi, v * m_height, m_radius * sine_phi);
+  }
+
+  virtual vec_t n(float u, float v) const
+  {
+    vec_t vert = (*this)(u, v);
+    return vec_t(vert.x, 0, vert.z);
+  }
+private:
+  float m_height;
+  float m_radius;
 };
 
 class EllipsoidFactory : public VerticesFactory
@@ -107,7 +118,7 @@ private:
   float m_c;
 };
 
-class base_geometry_t : public geometry_t
+class base_geometry_t : public IAnimationUnit
 {
 public:
 #pragma pack(push)
@@ -123,10 +134,10 @@ public:
   static const int c_FVF;
 
 public:
-  base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M = 10, unsigned int N = 10, VerticesFactory const &f = VerticesFactory() );
+  base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M = 10, unsigned int N = 10, VerticesFactory const &f = VerticesFactory(), color_t const &color = color_t(1.f) );
   virtual ~base_geometry_t();
 
-  virtual void render( LPDIRECT3DDEVICE9 device );
+  virtual void render( recursive_data_t & rd );
 protected:
   unsigned int m_vertices_num;
   unsigned int m_triangles_num;

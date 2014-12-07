@@ -12,6 +12,12 @@
     <Filter Include="Application\Math">
       <UniqueIdentifier>{527258d8-3519-49e3-895a-18b0fb6fac1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Application\Units">
+      <UniqueIdentifier>{e5277ed8-478f-4e3e-8469-4abf336b8423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Materials">
+      <UniqueIdentifier>{2a5babbc-8134-40b2-9a42-fc13f9cb21ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Library\cglApp.cpp">
@@ -30,13 +36,16 @@
       <Filter>Application</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\geometry.cpp">
-      <Filter>Application</Filter>
+      <Filter>Application\Units</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\meshes.cpp">
-      <Filter>Application</Filter>
+      <Filter>Application\Units</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\texture.cpp">
-      <Filter>Application</Filter>
+      <Filter>Application\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\flower.cpp">
+      <Filter>Application\Units</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,25 +79,31 @@
     <ClInclude Include="Src\Application\Math\cglMathVec.h">
       <Filter>Application\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\meshes.h">
-      <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Application\geometry.h">
-      <Filter>Application</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\Math\cglMathColor.h">
       <Filter>Application\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\car.h">
-      <Filter>Application</Filter>
+    <ClInclude Include="Src\Application\airplane.h">
+      <Filter>Application\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\geometry.h">
+      <Filter>Application\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\meshes.h">
+      <Filter>Application\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\unit.h">
+      <Filter>Application\Units</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\lights.h">
-      <Filter>Application</Filter>
+      <Filter>Application\Materials</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\texture.h">
-      <Filter>Application</Filter>
+      <Filter>Application\Materials</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\airplane.h">
+    <ClInclude Include="Src\Application\flower.h">
+      <Filter>Application\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\singletone.h">
       <Filter>Application</Filter>
     </ClInclude>
   </ItemGroup>

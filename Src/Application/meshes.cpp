@@ -47,13 +47,13 @@ void x_mesh_t::load( LPCWSTR file_name, LPDIRECT3DDEVICE9 device )
   m_mesh->OptimizeInplace(D3DXMESHOPT_COMPACT | D3DXMESHOPT_ATTRSORT, NULL, NULL, NULL, NULL);
 }
 
-void x_mesh_t::render( LPDIRECT3DDEVICE9 device )
+void x_mesh_t::render( recursive_data_t & rd )
 {
-  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)m_transform.matrix.M);
+  auto_texture_saver_t(rd.device, 0);
   for (DWORD i = 0; i < m_materials_count; ++i)
   {
-    device->SetMaterial(&(m_materials[i]));
-    m_textures->bind(device, 0);
+    rd.device->SetMaterial(&(m_materials[i]));
+    m_textures->bind(rd.device, 0);
     m_mesh->DrawSubset(i);
   }
 }

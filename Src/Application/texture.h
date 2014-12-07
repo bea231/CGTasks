@@ -31,7 +31,50 @@ public:
   }
 private:
   IDirect3DTexture9 *m_texture;
-  
 };
+
+class texture_binder_t
+{
+public:
+  texture_binder_t( IDirect3DDevice9 *device, texture_t & texture, DWORD stage )
+    : m_stage(stage)
+    , m_device(device)
+  {
+    m_device->GetTexture(stage, &m_prev_tex);
+    texture.bind(device, stage);
+  }
+
+  ~texture_binder_t()
+  {
+    m_device->SetTexture(m_stage, m_prev_tex);
+  }
+private:
+  DWORD m_stage;
+  IDirect3DDevice9 *m_device;
+  IDirect3DBaseTexture9 *m_prev_tex;
+};
+
+class texture_saver_t
+{
+public:
+  texture_saver_t( IDirect3DDevice9 *device, DWORD stage )
+    : m_stage(stage)
+    , m_device(device)
+  {
+    m_device->GetTexture(stage, &m_prev_tex);
+  }
+
+  ~texture_saver_t()
+  {
+    m_device->SetTexture(m_stage, m_prev_tex);
+  }
+private:
+  DWORD m_stage;
+  IDirect3DDevice9 *m_device;
+  IDirect3DBaseTexture9 *m_prev_tex;
+};
+
+#define auto_texture_saver_t(device, stage) texture_saver_t const texture_saver_t##__COUNTER__(device, stage)
+#define auto_texture_binder_t(device, texture, stage) texture_binder_t const texture_binder_t##__COUNTER__(device, texture, stage)
 
 #endif /* __TEXTURE_INCLUDED__ */
