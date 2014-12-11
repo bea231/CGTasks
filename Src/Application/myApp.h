@@ -1,13 +1,13 @@
+/**
+@file     cglapp.h
+@brief    Class cglApp definition
+@date     Created on 10/09/2005
+@project  D3DBase
+@author   Bvs
+*/
+
 #ifndef __MYLAPP_H__632619789336566350
 #define __MYLAPP_H__632619789336566350
-
-/**
-  @file     cglapp.h
-  @brief    Class cglApp definition
-  @date     Created on 10/09/2005
-  @project  D3DBase
-  @author   Bvs
-*/
 
 // *******************************************************************
 // includes
@@ -17,7 +17,6 @@
 #include "../Library/cglApp.h"
 #include "Math/cglMath.h"
 #include "geometry.h"
-#include "lights.h"
 #include "texture.h"
 
 #include "unit.h"
@@ -37,9 +36,14 @@ public:
   // Destructor
   virtual ~myApp() 
   {
-    m_font->Release();
+    if (m_font)
+      m_font->Release();
     for (unit_iterator_t it = m_units.begin(); it != m_units.end(); ++it)
         delete (*it);
+    if (m_vertex_declaration)
+      m_vertex_declaration->Release();
+    if (m_area_light_effect)
+      m_area_light_effect->Release();
   }
   // This function performs input processing. Returns true if input is handled
   virtual bool processInput(unsigned int nMsg, int wParam, long lParam);
@@ -57,12 +61,18 @@ private:
   int   m_nPrevMouseY;
   bool  m_keysPressed[MAX_KEYS];
   
-  void rotate(float dx, float dy);
-  void zoom(float dr);
+  void rotate();
+  void zoom();
+
+  float m_mouse_dx;
+  float m_mouse_dy;
+  float m_mouse_dr;
+
+  float m_step_forward;
+  float m_step_right;
+  float m_step_up;
 
   camera_t m_camera;
-
-  direction_light_t direction_light;
 
   typedef std::list<IAnimationUnit *>::iterator unit_iterator_t;
   std::list<IAnimationUnit *> m_units;
@@ -76,9 +86,15 @@ private:
 
   float m_bias;
 
-  ID3DXFont * m_font;
+  transform_t m_light_transform;
 
+  ID3DXEffect *m_area_light_effect;
+  IDirect3DVertexDeclaration9 *m_vertex_declaration;
+
+private:
+  ID3DXFont * m_font;
   void print_text( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color );
+  void draw_axis( IDirect3DDevice9 *device );
 };
 
 

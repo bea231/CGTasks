@@ -10,6 +10,7 @@
 #define __UNIT_INCLUDED__
 
 #include <d3d9.h>
+#include <d3dx9.h>
 #include <list>
 #include <memory>
 
@@ -27,14 +28,16 @@ struct recursive_data_t
 
   IDirect3DDevice9 *device;
 
-  recursive_data_t() {};
-  recursive_data_t( IDirect3DDevice9 *_device, camera_t &_camera, cglTimer &_timer, transform_t &_world_transform )
-     : device(_device)
-     , camera(_camera)
-     , timer(_timer)
-     , world_transform(_world_transform)
-  {
+  ID3DXEffect *light_effect;
 
+  recursive_data_t() {};
+  recursive_data_t( IDirect3DDevice9 *_device, ID3DXEffect *effect, camera_t &_camera, cglTimer &_timer, transform_t &_world_transform )
+     : device( _device )
+     , light_effect( effect )
+     , camera( _camera )
+     , timer( _timer )
+     , world_transform( _world_transform )
+  {
   }
 };
 
@@ -45,9 +48,9 @@ public:
   virtual void render( recursive_data_t & rd ) {};
   virtual void response( recursive_data_t & rd ) {};
 
-  IAnimationUnit & operator << ( std::unique_ptr<IAnimationUnit> unit )
+  IAnimationUnit & operator << (std::unique_ptr<IAnimationUnit> unit)
   {
-    m_units.push_back(std::move(unit));
+    m_units.push_back( std::move( unit ) );
     return *this;
   }
 
@@ -63,7 +66,7 @@ public:
 
   void set_transform( transform_t const & transform )
   {
-     m_transform = transform;
+    m_transform = transform;
   }
 protected:
   transform_t m_transform;

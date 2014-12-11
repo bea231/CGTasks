@@ -9,22 +9,18 @@
 // *******************************************************************
 // includes
 
-
 #include <vector>
-#include <cstdlib>
+#include <math.h>
+#include <stdlib.h>
+
 #include <windows.h>
 #include <windowsx.h>
 #include <zmouse.h>
-
-#include <cmath>
 
 #include "myApp.h"
 #include "../Library/cglD3D.h"
 
 #include <d3dx9math.h>
-
-#include "airplane.h"
-#include "flower.h"
 
 // *******************************************************************
 // defines
@@ -32,9 +28,9 @@
 namespace
 {
   const float s_rMouseMove2Rotate = 0.3f;
-  const float s_rMouseWheel2Zoom = 0.6f;
+  const float s_rMouseWheel2Zoom = 0.03f;
   const float s_rKbd2Rotate = 100.16f;
-  const float s_rKbd2Move = 30.f;
+  const float s_rKbd2Move = 140.f;
   const float s_rKbd2Zoom = 30.16f;
   const float s_rCarRotate = 30.f;
 }
@@ -45,6 +41,11 @@ static int s_minmag[2] = {D3DTEXF_POINT, D3DTEXF_LINEAR};
 
 // *******************************************************************
 // Methods
+
+float rnd( float a = 0, float b = 1 )
+{
+  return rand() / (float)RAND_MAX * (b - a) + a;
+}
 
 myApp::myApp( int nW, int nH, void* hInst, int nCmdShow )
   : cglApp(nW, nH, hInst, nCmdShow)
@@ -57,65 +58,69 @@ myApp::myApp( int nW, int nH, void* hInst, int nCmdShow )
   , m_mag_index(0)
   , m_bias(0)
   , m_font(0)
+  , m_mouse_dx(0)
+  , m_mouse_dy(0)
+  , m_mouse_dr(0)
+  , m_step_forward(0)
+  , m_step_right(0)
+  , m_step_up(0)
 {
   for (int i = 0; i < MAX_KEYS; i++)
     m_keysPressed[i] = false;
-  m_nClearColor = 0xFF222222;
-  m_camera.set_camera(vec_t(5, 5, 5.f), vec_t(0.f), vec_t(0.f, 1.f, 0.f), true);
+  m_nClearColor = 0xFF111111;
+  m_camera.set_camera(vec_t(100, 100, -100.f), vec_t(0.f), vec_t(0.f, 1.f, 0.f), true);
   m_camera.set_near_far(0.5, 10000.f);
 
   IDirect3DDevice9 *device  = m_pD3D->getDevice();
-  device->SetRenderState(D3DRS_SPECULARENABLE, true);
   device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-  device->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+  device->SetRenderState(D3DRS_LIGHTING, false);
 
   device->SetSamplerState( 0, D3DSAMP_MIPFILTER, s_mipmap[m_mipmap_index] );
 
-  direction_light.set_ambient(color_t(0.1f));
-  direction_light.set_diffuse(color_t(0.6f));
-  direction_light.set_specular(color_t(0.1f));
-  direction_light.set_direction(vec_t(-1, -1, 0.01f));
-  direction_light.set(device, 0);
-  direction_light.enable(device);
-
   /*** Add units to render ***/
-  m_units.push_back((IAnimationUnit *)new base_plane_t(device));
+  base_geometry_t * plane = new base_geometry_t(device, 2, 2, VerticesFactory(), color_t(0.8f, 0, 0));
+  plane->transform().translate(-0.5f, -0.5f, 0).rotate_x(-90).scale(120);
+  m_units.push_back(plane);
 
-  m_units.push_back((IAnimationUnit *)new airplane_t(device));
+  for (size_t i = 0; i < 20; ++i)
+  {
+    float r = rnd(0.1f);
+    float g = rnd(0.1f);
+    float b = rnd(0.1f);
 
-  flower_params_t params;
-  params.petal2_height = 0.1f;
-  params.petal2_width = 0.03f;
-  params.petal2_color = color_t(1, 0, 0);
-  params.petal2_angle_min = 5.f;
-  params.petal2_angle_max = 20.f;
+    base_geometry_t * sphere = new base_geometry_t( device, 40, 30, SphereFactory(), color_t(r, g, b));
+    float x = rnd(-45, 30);
+    float y = rnd(5, 30);
+    float z = rnd(-45, 30);
+    float radius = rnd(1, 7);
+    sphere->transform().scale(radius).translate(x, y, z);
+    m_units.push_back( sphere );
+  }
+  base_geometry_t * sphere = new base_geometry_t( device, 40, 30, SphereFactory());
+  sphere->transform().scale(30).translate(60, 50, 60 );
+  m_units.push_back( sphere ); 
 
-  params.petal1_height = 0.1f;
-  params.petal1_width = 0.1f;
-  params.petal1_color = color_t(0x00CC00UL);
-  params.petal1_angle_min = 5.f;
-  params.petal1_angle_max = 60.f;
+  m_light_transform.set_unit().translate(-0.5f, -0.5f, 0).scale(30).rotate_x(-45).rotate_y(45).translate(35, 25, 35);
+  base_geometry_t * light_plane = new base_geometry_t(device, 2, 2, VerticesFactory());
+  light_plane->transform().transform(m_light_transform);
+  m_units.push_back(light_plane);
 
-  params.receptacle_radius = 0.12f;
-  params.receptacle_color = color_t(0xFFCC33UL);
+  ID3DXBuffer *errors;
+  HRESULT hr = D3DXCreateEffectFromFile(device, L"Res/area_light.fx", NULL, NULL, D3DXSHADER_DEBUG, NULL, &m_area_light_effect, &errors);
+  if (hr != D3D_OK || errors)
+  {
+     MessageBox(NULL, L"Cannot load effect", L"ERROR", MB_ICONERROR | MB_OK);
+     PostQuitMessage(EXIT_FAILURE);
+  }
 
-  params.petals_count = 12;
-  params.velocity = 1.f;
-
-  params.stem_thickness = 0.03f;
-  params.stem_length = 0.7f;
-  params.stem_color = color_t(0x003300UL);
-  
-  for (size_t i = 0; i < 10; ++i)
-    for (size_t j = 0; j < 10; ++j)
-    {
-      params.velocity =  (rand() / (float)RAND_MAX + 0.1f) * 2;
-      flower_t *flower = new flower_t(device, params);
-      float const x = rand() / (float)RAND_MAX * 40 - 20;
-      float const z = rand() / (float)RAND_MAX * 40 - 20;
-      flower->transform().translate(x, 0, z);
-      m_units.push_back((IAnimationUnit *)flower);
-    }
+  D3DVERTEXELEMENT9 decl[] = {
+     {0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+     {0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+     {0, 24, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
+     {0, 28, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+     D3DDECL_END()
+  };
+  device->CreateVertexDeclaration(decl, &m_vertex_declaration);
 }
 
 bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
@@ -132,8 +137,8 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
 
       if ((wParam & MK_LBUTTON) != 0 && m_nPrevMouseX >= 0) // 
       {
-        rotate(s_rMouseMove2Rotate * (xPos - m_nPrevMouseX), 
-               s_rMouseMove2Rotate * (yPos - m_nPrevMouseY));
+        m_mouse_dx += s_rMouseMove2Rotate * (xPos - m_nPrevMouseX);
+        m_mouse_dy += s_rMouseMove2Rotate * (yPos - m_nPrevMouseY);
       }
       
       m_nPrevMouseX = xPos;
@@ -145,7 +150,7 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
     case WM_MOUSEWHEEL:
     {
       int zDelta = (int)((signed short)(HIWORD(wParam)));
-      zoom(zDelta * s_rMouseWheel2Zoom * m_timer.getDelta());
+      m_mouse_dr += zDelta * s_rMouseWheel2Zoom;
       break;
     }
     
@@ -163,22 +168,22 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
         m_camera.update_look_at_loc_up();
         break;
       case 'Q':
-        m_camera.move_up(-s_rKbd2Move * m_timer.getDelta() );
+        m_step_up += (-s_rKbd2Move * m_timer.getDelta() );
         break;
       case 'E':
-        m_camera.move_up(s_rKbd2Move * m_timer.getDelta() );
+        m_step_up += (s_rKbd2Move * m_timer.getDelta() );
         break;
       case 'W':
-        m_camera.move_forward( s_rKbd2Move * m_timer.getDelta() );
+        m_step_forward += s_rKbd2Move * m_timer.getDelta();
         break;
       case 'A':
-        m_camera.move_right( -s_rKbd2Move * m_timer.getDelta() );
+        m_step_right += ( -s_rKbd2Move * m_timer.getDelta() );
         break;
       case 'S':
-        m_camera.move_forward( -s_rKbd2Move * m_timer.getDelta() );
+        m_step_forward += ( -s_rKbd2Move * m_timer.getDelta() );
         break;
       case 'D':
-        m_camera.move_right( s_rKbd2Move * m_timer.getDelta() );
+        m_step_right += ( s_rKbd2Move * m_timer.getDelta() );
         break;
       case 'M':
         m_mipmap_index = (m_mipmap_index + 1) % 3;
@@ -228,66 +233,83 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
   return cglApp::processInput(nMsg, wParam, lParam);
 }
 
-void myApp::rotate(float dx, float dy)
+void myApp::rotate()
 {
   if (m_is_fixed_camera)
   {
-    if (cglmath::Abs(dx) > 0.001)
-      m_camera.horizontal_rotate_round_look_at(dx);
-    if (cglmath::Abs(dy) > 0.001)
-      m_camera.vertical_rotate_round_look_at(dy);
+    if (cglmath::Abs(m_mouse_dx) > 0.001)
+      m_camera.horizontal_rotate_round_look_at(m_mouse_dx);
+    if (cglmath::Abs(m_mouse_dy) > 0.001)
+      m_camera.vertical_rotate_round_look_at(m_mouse_dy);
   }
   else
   {
-    m_camera.rotate_right(dy / 2);
-    m_camera.rotate_up(dx / 2);
+    m_camera.rotate_right(m_mouse_dy / 2);
+    m_camera.rotate_y(-m_mouse_dx / 2);
   }
+
+  m_mouse_dx = 0;
+  m_mouse_dy = 0;
 }
 
-void myApp::zoom(float dr)
+void myApp::zoom()
 {
   if (m_is_fixed_camera)
-    m_camera.move_to_look_at(dr, 1);
+    m_camera.move_to_look_at(m_mouse_dr, 1);
+  m_mouse_dr = 0;
+}
+
+void myApp::draw_axis( IDirect3DDevice9 *device )
+{
+  float const axis_len = 1000;
+  struct axis_vertex_t
+  {
+     vec_t v;
+     DWORD color;
+  } static const axis[6] =
+  {
+     { vec_t(0, 0, 0), 0xFFFF0000 },
+     { vec_t(axis_len, 0, 0), 0xFFFF0000 },
+     { vec_t(0, 0, 0), 0xFF00FF00 },
+     { vec_t(0, axis_len, 0), 0xFF00FF00 },
+     { vec_t(0, 0, 0), 0xFF0000FF },
+     { vec_t(0, 0, axis_len), 0xFF0000FF },
+  };
+  device->SetTransform(D3DTS_PROJECTION, (D3DMATRIX *)m_camera.get_projection_matrix().M);
+  device->SetTransform(D3DTS_VIEW, (D3DMATRIX *)m_camera.get_view_matrix().M);
+  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)matrix_t::UnitMatrix);
+  device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+  device->DrawPrimitiveUP(D3DPT_LINELIST, 3, axis, sizeof(axis_vertex_t));
 }
 
 void myApp::renderInternal()
 {
-  D3DXMATRIX proj, view;
   IDirect3DDevice9 *device = m_pD3D->getDevice();
-  device->SetTransform(D3DTS_PROJECTION, (D3DMATRIX *)m_camera.get_projection_matrix().M);
-  device->SetTransform(D3DTS_VIEW, (D3DMATRIX *)m_camera.get_view_matrix().M);
 
-  recursive_data_t rd(device, m_camera, m_timer, transform_t());
-  for (unit_iterator_t it = m_units.begin(); it != m_units.end(); ++it)
-    (*it)->treat_as_unit(rd);
+  draw_axis(device);
 
-  char buf[1000] = {0};
-  sprintf_s(buf, "MipMap: %s\nMin filter: %s\nMagFilter: %s\nMipMap bias: %f",
-             m_mipmap_index == 0 ? "D3DTEXF_POINT" : m_mipmap_index == 1 ? "D3DTEXF_LINEAR" : "D3DTEXF_NONE",
-             m_min_index == 0 ? "D3DTEXF_POINT" : "D3DTEXF_LINEAR",
-             m_mag_index == 0 ? "D3DTEXF_POINT" : "D3DTEXF_LINEAR",
-             m_bias);
-  print_text(buf, 0, 0, 1000, 100, color_t(.5f, 0.5f, 0.5f));
+  HRESULT hr;
+  device->SetVertexDeclaration(m_vertex_declaration);
+  hr = m_area_light_effect->SetTechnique("area_light_technique");
+  hr = m_area_light_effect->SetMatrix("u_view_projection_matrix", (D3DXMATRIX *)(m_camera.get_view_matrix() * m_camera.get_projection_matrix()).M);
+  vec_t const cam = m_camera.location;
+  hr = m_area_light_effect->SetVector("u_camera_pos", &(D3DXVECTOR4(cam.x, cam.y, cam.z, 1)));
 
-  float const axis_len = 1000;
-  struct axis_vertex
-  {
-    vec_t v;
-    DWORD color;
-  } const axis[6] =
-  {
-    { vec_t( 0, 0, 0 ), 0xFFFF0000 },
-    { vec_t( axis_len, 0, 0 ), 0xFFFF0000 },
-    { vec_t( 0, 0, 0 ), 0xFF00FF00 },
-    { vec_t( 0, axis_len, 0 ), 0xFF00FF00 },
-    { vec_t( 0, 0, 0 ), 0xFF0000FF },
-    { vec_t( 0, 0, axis_len ), 0xFF0000FF },
-  };
-  device->SetTransform(D3DTS_WORLD, (D3DMATRIX *)matrix_t::UnitMatrix);
-  device->SetRenderState( D3DRS_LIGHTING, false );
-  device->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE );
-  device->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( axis_vertex ) );
-  device->SetRenderState( D3DRS_LIGHTING, true );
+  hr = m_area_light_effect->SetMatrix("u_light_plane_matrix", (D3DXMATRIX *)m_light_transform.matrix.M);
+  hr = m_area_light_effect->SetMatrix("u_light_plane_inv_matrix", (D3DXMATRIX *)m_light_transform.inv_matrix.M);
+
+  recursive_data_t rd(device, m_area_light_effect, m_camera, m_timer, transform_t());
+
+  size_t num_passes = 0;
+  m_area_light_effect->Begin(&num_passes, 0);
+  for(size_t i = 0; i < num_passes; ++i)
+  { 
+    m_area_light_effect->BeginPass(i);
+    for (unit_iterator_t it = m_units.begin(); it != m_units.end(); ++it)
+      (*it)->treat_as_unit(rd);
+    m_area_light_effect->EndPass();
+  }
+  m_area_light_effect->End();
 }
 
 void myApp::update()
@@ -311,6 +333,14 @@ void myApp::update()
     dr -= s_rKbd2Zoom * m_timer.getDelta();
   if (m_keysPressed[VK_ADD])
     dr += s_rKbd2Zoom * m_timer.getDelta();
+
+  rotate();
+  zoom();
+
+  m_camera.move_up(m_step_up);
+  m_camera.move_forward(m_step_forward);
+  m_camera.move_right(m_step_right);
+  m_step_up = m_step_forward = m_step_right = 0;
 
 }
 

@@ -70,6 +70,9 @@
       </EntryPointSymbol>
       <AdditionalDependencies>d3dx9d.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ObjectFileOutput>%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -92,10 +95,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Application\flower.cpp" />
     <ClCompile Include="Src\Application\geometry.cpp" />
     <ClCompile Include="Src\Application\main.cpp" />
-    <ClCompile Include="Src\Application\meshes.cpp" />
     <ClCompile Include="Src\Application\myApp.cpp" />
     <ClCompile Include="Src\Application\texture.cpp" />
     <ClCompile Include="Src\Library\cglApp.cpp" />
@@ -103,8 +104,6 @@
     <ClCompile Include="Src\Library\cglTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Application\airplane.h" />
-    <ClInclude Include="Src\Application\flower.h" />
     <ClInclude Include="Src\Application\geometry.h" />
     <ClInclude Include="Src\Application\lights.h" />
     <ClInclude Include="Src\Application\Math\cglMathColor.h" />
@@ -114,7 +113,6 @@
     <ClInclude Include="Src\Application\Math\cglMathMatrix.h" />
     <ClInclude Include="Src\Application\Math\cglMathTransform.h" />
     <ClInclude Include="Src\Application\Math\cglMathVec.h" />
-    <ClInclude Include="Src\Application\meshes.h" />
     <ClInclude Include="Src\Application\myApp.h" />
     <ClInclude Include="Src\Application\singletone.h" />
     <ClInclude Include="Src\Application\texture.h" />
@@ -122,6 +120,19 @@
     <ClInclude Include="Src\Library\cglApp.h" />
     <ClInclude Include="Src\Library\cglD3D.h" />
     <ClInclude Include="Src\Library\cglTimer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Res\area_light.fx">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ConfigurationName)/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

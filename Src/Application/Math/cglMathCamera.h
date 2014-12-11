@@ -312,6 +312,22 @@ namespace cglmath
       return *this;
     }
 
+    TCamera& rotate_y( TYPE angle )
+    {
+      TTransform<TYPE> rot_y;
+      TYPE dist = !(location - look_at);
+
+      rot_y.set_rotate_y(angle);
+
+      direction = rot_y.transform_vector( direction );
+      right = rot_y.transform_vector( right );
+      up = rot_y.transform_vector(up);
+      update_dir_loc_up();
+      look_at = location + direction * dist;
+
+      return *this;
+    }
+
     /* Rotation camera view round up direction vector */
     void horizontal_rotate_round_look_at( TYPE angle )
     {

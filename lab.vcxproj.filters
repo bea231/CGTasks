@@ -18,6 +18,9 @@
     <Filter Include="Application\Materials">
       <UniqueIdentifier>{2a5babbc-8134-40b2-9a42-fc13f9cb21ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{34d9f8cc-bc06-4022-bf97-df9ae34dc01b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Library\cglApp.cpp">
@@ -38,14 +41,8 @@
     <ClCompile Include="Src\Application\geometry.cpp">
       <Filter>Application\Units</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\meshes.cpp">
-      <Filter>Application\Units</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\texture.cpp">
       <Filter>Application\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Application\flower.cpp">
-      <Filter>Application\Units</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -82,13 +79,7 @@
     <ClInclude Include="Src\Application\Math\cglMathColor.h">
       <Filter>Application\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\airplane.h">
-      <Filter>Application\Units</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\geometry.h">
-      <Filter>Application\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Application\meshes.h">
       <Filter>Application\Units</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\unit.h">
@@ -100,11 +91,13 @@
     <ClInclude Include="Src\Application\texture.h">
       <Filter>Application\Materials</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\flower.h">
-      <Filter>Application\Units</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\singletone.h">
       <Filter>Application</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Res\area_light.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
