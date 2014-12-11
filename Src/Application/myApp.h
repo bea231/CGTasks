@@ -68,10 +68,6 @@ private:
   float m_mouse_dy;
   float m_mouse_dr;
 
-  float m_step_forward;
-  float m_step_right;
-  float m_step_up;
-
   camera_t m_camera;
 
   typedef std::list<IAnimationUnit *>::iterator unit_iterator_t;

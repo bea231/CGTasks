@@ -6,6 +6,15 @@ float4x4 u_light_plane_inv_matrix;
 
 float3   u_camera_pos;
 
+struct material_t
+{
+   float ambient;
+   float diffuse;
+   float specular;
+   float specular_power;
+};
+material_t u_material;
+
 struct vs_out_t
 {
   float4 pos : POSITION;
@@ -48,9 +57,9 @@ float4 area_light_PS( vs_out_t fs_in ) : COLOR0
   //float  reflective = dot(normalize(view + light_dir), normal); // blinn model
   float  reflective = dot(reflect(-view, normal), light_dir);  // phong model
 
-  float ambient = 0.1;
-  float diffuse = saturate(dot(normal, light_dir)) * attenuation + float(light_dist < 0.00000001f);
-  float specular = 0.3 * pow(max(0, reflective), 8) * attenuation;
+  float ambient = 0.01 + u_material.ambient * attenuation;
+  float diffuse = u_material.diffuse * (saturate(dot(normal, light_dir)) * attenuation + float(light_dist < 0.00000001f));
+  float specular = u_material.specular * pow(max(0, reflective), u_material.specular_power) * attenuation;
   float lightning = (ambient + diffuse + specular);
 
   return fs_in.color * lightning;

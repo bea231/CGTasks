@@ -16,9 +16,11 @@ static DWORD vec_to_color( vec_t const & v)
   return D3DCOLOR_XRGB((int)norm_v.x, (int)norm_v.y, (int)norm_v.z);
 }
 
-base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsigned int N, VerticesFactory const &f, color_t const &color )
+base_geometry_t::base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M, unsigned int N, VerticesFactory const &f,
+                                  color_t const &color, material_t const & material )
   : m_vertices_num(M * N)
   , m_triangles_num((M - 1) * (N - 1) * 2)
+  , m_material(material)
 {
   float const delta_u = 1.f / (M - 1);
   float const delta_v = 1.f / (N - 1);
@@ -83,6 +85,7 @@ base_geometry_t::~base_geometry_t()
 void base_geometry_t::render( recursive_data_t & rd )
 {
   rd.light_effect->SetMatrix("u_model_matrix", (D3DXMATRIX *)m_transform.matrix.M);
+  m_material.set(rd.light_effect);
   rd.light_effect->CommitChanges();
   rd.device->SetIndices(m_index_buf);
   rd.device->SetStreamSource(0, m_vertices_buf, 0, sizeof(vertex_t));

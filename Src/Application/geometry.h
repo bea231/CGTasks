@@ -15,6 +15,29 @@
 #include "unit.h"
 #include "Math/cglMath.h"
 
+#pragma pack(push, 1)
+struct material_t
+{
+  float ambient;
+  float diffuse;
+  float specular;
+  float specular_power;
+
+  material_t( float a = 0, float d = 1, float s = 0, float sp = 8 ) 
+    : ambient(a)
+    , diffuse(d)
+    , specular(s)
+    , specular_power(sp)
+  {
+  }
+
+  void set( ID3DXEffect *effect )
+  {
+    effect->SetValue("u_material", (void *)this, sizeof(material_t));
+  }
+};
+#pragma pack(pop)
+
 class VerticesFactory
 {
 public:
@@ -134,7 +157,8 @@ public:
   static const int c_FVF;
 
 public:
-  base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M = 10, unsigned int N = 10, VerticesFactory const &f = VerticesFactory(), color_t const &color = color_t(1.f) );
+  base_geometry_t( LPDIRECT3DDEVICE9 device, unsigned int M = 10, unsigned int N = 10, VerticesFactory const &f = VerticesFactory(), 
+    color_t const &color = color_t(1.f), material_t const & material = material_t(0.01f, 1, 0.2f, 8) );
   virtual ~base_geometry_t();
 
   virtual void render( recursive_data_t & rd );
@@ -144,6 +168,7 @@ protected:
   IDirect3DVertexBuffer9 *m_vertices_buf;
   IDirect3DIndexBuffer9 *m_index_buf;
 
+  material_t m_material;
 };
 
 #endif /* __GEOMETRY_INCLUDED__ */

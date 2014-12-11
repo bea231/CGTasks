@@ -61,9 +61,6 @@ myApp::myApp( int nW, int nH, void* hInst, int nCmdShow )
   , m_mouse_dx(0)
   , m_mouse_dy(0)
   , m_mouse_dr(0)
-  , m_step_forward(0)
-  , m_step_right(0)
-  , m_step_up(0)
 {
   for (int i = 0; i < MAX_KEYS; i++)
     m_keysPressed[i] = false;
@@ -84,15 +81,18 @@ myApp::myApp( int nW, int nH, void* hInst, int nCmdShow )
 
   for (size_t i = 0; i < 20; ++i)
   {
-    float r = rnd(0.1f);
-    float g = rnd(0.1f);
-    float b = rnd(0.1f);
+    float const r = rnd(0.1f);
+    float const g = rnd(0.1f);
+    float const b = rnd(0.1f);
 
-    base_geometry_t * sphere = new base_geometry_t( device, 40, 30, SphereFactory(), color_t(r, g, b));
-    float x = rnd(-45, 30);
-    float y = rnd(5, 30);
-    float z = rnd(-45, 30);
-    float radius = rnd(1, 7);
+    float const x = rnd(-45, 30);
+    float const y = rnd(5, 30);
+    float const z = rnd(-45, 30);
+    float const radius = rnd(1, 7);
+
+    material_t const m(0.01f, 1, 1 - radius / 10.f, 4 * radius);
+
+    base_geometry_t * sphere = new base_geometry_t( device, 40, 30, SphereFactory(), color_t(r, g, b), m);
     sphere->transform().scale(radius).translate(x, y, z);
     m_units.push_back( sphere );
   }
@@ -167,24 +167,24 @@ bool myApp::processInput(unsigned int nMsg, int wParam, long lParam)
         m_camera.up = vec_t(0, 1, 0);
         m_camera.update_look_at_loc_up();
         break;
-      case 'Q':
-        m_step_up += (-s_rKbd2Move * m_timer.getDelta() );
-        break;
-      case 'E':
-        m_step_up += (s_rKbd2Move * m_timer.getDelta() );
-        break;
       case 'W':
-        m_step_forward += s_rKbd2Move * m_timer.getDelta();
-        break;
-      case 'A':
-        m_step_right += ( -s_rKbd2Move * m_timer.getDelta() );
+        m_camera.move_forward(s_rKbd2Move * m_timer.getDelta());
         break;
       case 'S':
-        m_step_forward += ( -s_rKbd2Move * m_timer.getDelta() );
+        m_camera.move_forward(-s_rKbd2Move * m_timer.getDelta());
+        break;
+      case 'A':
+        m_camera.move_right(s_rKbd2Move * m_timer.getDelta());
         break;
       case 'D':
-        m_step_right += ( s_rKbd2Move * m_timer.getDelta() );
+        m_camera.move_right(-s_rKbd2Move * m_timer.getDelta());
         break;
+      case 'E':
+        m_camera.move_up(s_rKbd2Move * m_timer.getDelta());
+        break;
+      case 'Q':
+         m_camera.move_up(-s_rKbd2Move * m_timer.getDelta());
+         break;
       case 'M':
         m_mipmap_index = (m_mipmap_index + 1) % 3;
         m_pD3D->getDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, s_mipmap[m_mipmap_index]);
@@ -317,31 +317,8 @@ void myApp::update()
   // Call predecessor update
   cglApp::update();
 
-  // Process keyboard
-  float dx = 0.0f;
-  float dy = 0.0f;
-  float dr = 0.0f;
-  if (m_keysPressed[VK_LEFT])
-    dx -= s_rKbd2Rotate * m_timer.getDelta();
-  if (m_keysPressed[VK_RIGHT])
-    dx += s_rKbd2Rotate * m_timer.getDelta();
-  if (m_keysPressed[VK_UP])
-    dy -= s_rKbd2Rotate * m_timer.getDelta();
-  if (m_keysPressed[VK_DOWN])
-    dy += s_rKbd2Rotate * m_timer.getDelta();
-  if (m_keysPressed[VK_SUBTRACT])
-    dr -= s_rKbd2Zoom * m_timer.getDelta();
-  if (m_keysPressed[VK_ADD])
-    dr += s_rKbd2Zoom * m_timer.getDelta();
-
   rotate();
   zoom();
-
-  m_camera.move_up(m_step_up);
-  m_camera.move_forward(m_step_forward);
-  m_camera.move_right(m_step_right);
-  m_step_up = m_step_forward = m_step_right = 0;
-
 }
 
 void myApp::print_text( char *text, long x1, long y1, long x2, long y2, D3DCOLOR color )
